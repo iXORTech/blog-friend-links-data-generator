@@ -74,6 +74,17 @@ jobs:
    
 4. Create a new GitHub token with `repo` and `workflow` permission and add it to your link data repository as a secret named `CI_TOKEN`.
 5. Add your website repository and your submodule path as `WEBSITE_REPO` and `SUBMODULE_PATH` in your link data repository's variable section (Settings > Secrets and variables > Actions > Variables) respectively.
+6. Add the following step to the `Generate Friend Links Data` action workflow in your link data repository's workflow file:
+```yaml
+ - name: Sync Friend Links Data
+   run: |
+     curl -X POST \
+       -H "Accept: application/vnd.github+json" \
+       -H "Authorization: Bearer ${{ secrets.CI_TOKEN }}" \
+       -H "X-GitHub-Api-Version: 2022-11-28" \
+       https://api.github.com/repos/${{ vars.WEBSITE_REPO }}/dispatches \
+       -d "{\"event_type\": \"sync-friend-links-data\", \"client_payload\": {\"submodule\": \"${{ vars.SUBMODULE_PATH }}\"}}"
+```
 
 Now, whenever the `Generate Friend Links Data` action is triggered, it will also trigger the `Sync Friend Links Data` action in your website repository to update the friend links data submodule, and your website should always be kept up-to-date with the latest friend links data.
 
